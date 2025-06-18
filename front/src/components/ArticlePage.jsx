@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getArticleById } from "../services/api";
 
@@ -11,14 +11,12 @@ export default function ArticlePage() {
 
   useEffect(() => {
     fetchArticle();
-  }, []);
-
+  }, [id]);
 
   const fetchArticle = async () => {
     try {
       setLoading(true);
-
-      const found = getArticleById(id);
+      const found = await getArticleById(id); 
       if (found) {
         setArticle(found);
         setError("");
@@ -41,9 +39,14 @@ export default function ArticlePage() {
     <div>
       <h2>{article.title}</h2>
       <p>{article.content}</p>
+
       <div>
-        <strong>Journalist:</strong> {article.journalist}
+        <strong>Journalist:</strong>{" "}
+        <Link to={`/journalists/${article.journalistid}/articles`}>
+          {article.journalist_name}
+        </Link>
       </div>
+
       <div>
         <strong>Category:</strong> {article.category}
       </div>

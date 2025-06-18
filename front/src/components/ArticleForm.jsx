@@ -9,7 +9,7 @@ export default function ArticleForm({ isEdit }) {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    journalist: "",
+    journalistid: "",  // <-- changed from journalist
     category: "",
   });
 
@@ -20,14 +20,20 @@ export default function ArticleForm({ isEdit }) {
     if (isEdit && id) {
       fetchArticle(id);
     }
-  }, []);
+  }, [id, isEdit]);
 
   const fetchArticle = async (id) => {
     setIsLoading(true);
     setError("");
     try {
       const article = await getArticleById(id);
-      setFormData(article);
+      // Set form data, make sure keys match
+      setFormData({
+        title: article.title || "",
+        content: article.content || "",
+        journalistid: article.journalistid || "",
+        category: article.category || "",
+      });
     } catch (err) {
       setError("Failed to load article. Please try again.");
     } finally {
@@ -44,11 +50,17 @@ export default function ArticleForm({ isEdit }) {
     setIsLoading(true);
     setError("");
 
+    // Convert journalistid to number before sending
+    const payload = {
+      ...formData,
+      journalistid: Number(formData.journalistid),
+    };
+
     try {
       if (isEdit) {
-        await updateArticle(id, formData);
+        await updateArticle(id, payload);
       } else {
-        await createArticle(formData);
+        await createArticle(payload);
       }
       navigate("/articles");
     } catch (err) {
@@ -65,40 +77,58 @@ export default function ArticleForm({ isEdit }) {
 
       <form className="article-form" onSubmit={handleSubmit}>
         <h2>{isEdit ? "Edit Article" : "Create Article"}</h2>
-        <input
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="Title"
-          required
-        />
+
+        <label>
+          Title:
+          <input
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Title"
+            required
+          />
+        </label>
         <br />
-        <textarea
-          name="content"
-          value={formData.content}
-          onChange={handleChange}
-          placeholder="Content"
-          required
-        />
+
+        <label>
+          Content:
+          <textarea
+            name="content"
+            value={formData.content}
+            onChange={handleChange}
+            placeholder="Content"
+            required
+          />
+        </label>
         <br />
-        <input
-          name="journalist"
-          value={formData.journalist}
-          onChange={handleChange}
-          placeholder="Journalist ID"
-          required
-        />
+
+        <label>
+          Journalist ID:
+          <input
+            name="journalistid"
+            value={formData.journalistid}
+            onChange={handleChange}
+            placeholder="Journalist ID (number)"
+            type="number"
+            required
+          />
+        </label>
         <br />
-        <input
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          placeholder="Category ID"
-          required
-        />
+
+        <label>
+          Category:
+          <input
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            placeholder="Category"
+            required
+          />
+        </label>
         <br />
+
         <button className="main" type="submit">
-          {isEdit ? "Edit " : "Create"}
+          {isEdit ? "Update" : "Create"}
         </button>
       </form>
     </>
